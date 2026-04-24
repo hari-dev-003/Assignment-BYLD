@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+model Portfolio {
+  id           String        @id @default(uuid())
+  clientName   String
+  riskProfile  String
+  cashBalance  Decimal       @default(0) @db.Decimal(19, 4)
+  holdings     Holding[]
+  transactions Transaction[]
+  alerts       Alert[]
+  createdAt    DateTime      @default(now())
+}
+
+model Company {
+  id       Int      @id @default(autoincrement())
+  symbol   String   @unique
+  name     String
+  category Category
+  price    Decimal  @db.Decimal(19, 4)
+}
+
+enum Category {
+  ETF
+  MTF
+  BOND
+  STOCK
+}
+
+model Holding {
+  id          String    @id @default(uuid())
+  symbol      String
+  quantity    Decimal   @db.Decimal(19, 4)
+  avgCost     Decimal   @db.Decimal(19, 4)
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolioId String
+
+  @@unique([portfolioId, symbol])
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  symbol      String
+  quantity    Decimal  @db.Decimal(19, 4)
+  price       Decimal  @db.Decimal(19, 4)
+  type        String   // "BUY" or "SELL"
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolioId String
+  createdAt   DateTime @default(now())
+}
+
+model Alert {
+  id          String    @id @default(uuid())
+  symbol      String
+  kind        AlertKind
+  price       Decimal   @db.Decimal(19, 4)
+  webhookUrl  String
+  status      String    @default("ACTIVE") // "ACTIVE" or "INACTIVE"
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolioId String
+}
+
+enum AlertKind {
+  ABOVE
+  BELOW
+}

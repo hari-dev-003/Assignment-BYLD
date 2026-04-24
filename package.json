@@ -1,0 +1,32 @@
+{
+  "name": "wealth-tech-server",
+  "version": "1.0.0",
+  "description": "Wealth tech backend server which involves of endpoints and logics to achieve the MVP of wealth management application.",
+  "license": "ISC",
+  "author": "Hari Dev",
+  "type": "module",
+  "main": "index.js",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "scripts": {
+    "test": "",
+    "dev": "nodemon src/index.js",
+    "migrate:prod": "prisma migrate deploy && prisma db seed"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "decimal.js": "^10.6.0",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14",
+    "pg": "^8.20.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.8.0"
+  }
+}

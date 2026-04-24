@@ -6,10 +6,10 @@ const app = express()
 app.use(express.json())
 app.use(logger)
 
-app.use("/",(req,res)=>{
+app.use("/api/app",router);
+
+app.get("/",(req,res)=>{
     res.json("Welcome to backend")
 })
-
-app.use("/api/app",router);
 
 export default app;

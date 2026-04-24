@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import "dotenv/config";
+import prisma from "../src/config/db.js";
 
 const companies = [
   // STOCKS

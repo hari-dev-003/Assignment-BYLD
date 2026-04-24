@@ -1,6 +1,9 @@
+import "dotenv/config";
 import app from "./app.js";
 
-app.listen(3000, ()=>{
-    console.log("Backend is running");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, ()=>{
+    console.log(`Backend is running on port ${PORT}`);
     
 })

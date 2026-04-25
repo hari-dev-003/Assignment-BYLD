@@ -1,5 +1,13 @@
-const errorHandler = (err,req,res,next)=>{
-    res.status(err.status || 500).json({message: err.message || "Server Error "})
+ const errorHandler = (err, req, res, next) => {
+  if (err.name === 'ZodError') {
+    return res.status(400).json({
+      error: "Validation Failed",
+      details: err.errors.map(e => ({ path: e.path[0], message: e.message }))
+    });
+  }
+
+  console.error(err);
+  res.status(500).json({ error: "Internal Server Error" });
 };
 
-module.exports = errorHandler;
+export {errorHandler}

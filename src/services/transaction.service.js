@@ -39,7 +39,7 @@ export const transactionService = {
         const oldAvg = new Decimal(existingHolding.avgCost.toString());
         const newQty = oldQty.plus(new Decimal(quantity));
         
-        // Formula: ((OldQty * OldAvg) + (NewQty * NewPrice)) / TotalQty
+        
         const newAvgCost = (oldQty.times(oldAvg).plus(totalCost)).div(newQty);
 
         await tx.holding.update({

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { createPortfolio, addFunds, getPortfolioDetails } from '../controllers/portfolio.controller.js';
 import { buyStock, sellStock } from '../controllers/transaction.controller.js';
+import { createAlert } from '../controllers/alert.controller.js';
 
 const router = Router();
 
@@ -326,5 +327,98 @@ router.post('/portfolios/:id/buy', buyStock);
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/portfolios/:id/sell', sellStock);
+
+/**
+ * @openapi
+ * /v1/portfolios/{id}/alerts:
+ *   post:
+ *     tags:
+ *       - Alerts
+ *     summary: Create a price alert
+ *     description: >
+ *       Creates a price alert for a symbol in this portfolio. A background job polls
+ *       every 30 seconds and POSTs to the webhookUrl when the condition fires.
+ *       Each alert fires at most once, then becomes INACTIVE.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Portfolio ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [symbol, kind, price, webhookUrl]
+ *             properties:
+ *               symbol:
+ *                 type: string
+ *                 example: "AAPL"
+ *               kind:
+ *                 type: string
+ *                 enum: [ABOVE, BELOW]
+ *                 example: ABOVE
+ *               price:
+ *                 type: number
+ *                 description: The price threshold that triggers the alert
+ *                 example: 180.00
+ *               webhookUrl:
+ *                 type: string
+ *                 format: uri
+ *                 description: URL that receives a POST when the alert fires
+ *                 example: "https://webhook.site/your-unique-id"
+ *     responses:
+ *       201:
+ *         description: Alert created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Alert created successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     symbol:
+ *                       type: string
+ *                     kind:
+ *                       type: string
+ *                       enum: [ABOVE, BELOW]
+ *                     price:
+ *                       type: number
+ *                     webhookUrl:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                       example: "ACTIVE"
+ *                     portfolioId:
+ *                       type: string
+ *                       format: uuid
+ *       400:
+ *         description: Validation error (invalid kind, missing fields, bad URL)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Portfolio or symbol not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.post('/portfolios/:id/alerts', createAlert);
 
 export default router;

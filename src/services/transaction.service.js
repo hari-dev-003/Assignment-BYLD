@@ -5,9 +5,18 @@ export const transactionService = {
   // --- BUY LOGIC ---
   async executeBuy(portfolioId, { symbol, quantity, price }) {
     return await prisma.$transaction(async (tx) => {
-      // 1. Verify Company exists 
+      // 1. Verify Company exists
       const company = await tx.company.findUnique({ where: { symbol } });
       if (!company) throw new Error('COMPANY_NOT_FOUND');
+
+      // 1a. Slippage Protection: userPrice must be within ±0.5% of market price
+      const marketPrice = new Decimal(company.price.toString());
+      const userPrice = new Decimal(price);
+      const lowerBound = marketPrice.times(0.995);
+      const upperBound = marketPrice.times(1.005);
+      if (userPrice.lt(lowerBound) || userPrice.gt(upperBound)) {
+        throw new Error('PRICE_SLIPPAGE_EXCEEDED');
+      }
 
       // 2. Checking Portfolio and Balance
       const portfolio = await tx.portfolio.findUnique({ where: { id: portfolioId } });
@@ -59,7 +68,19 @@ export const transactionService = {
   // --- SELL LOGIC ---
   async executeSell(portfolioId, { symbol, quantity, price }) {
     return await prisma.$transaction(async (tx) => {
-      // 1. Verify the user has this stock
+      // 1. Verify Company exists and enforce slippage protection
+      const company = await tx.company.findUnique({ where: { symbol } });
+      if (!company) throw new Error('COMPANY_NOT_FOUND');
+
+      const marketPrice = new Decimal(company.price.toString());
+      const userPrice = new Decimal(price);
+      const lowerBound = marketPrice.times(0.995);
+      const upperBound = marketPrice.times(1.005);
+      if (userPrice.lt(lowerBound) || userPrice.gt(upperBound)) {
+        throw new Error('PRICE_SLIPPAGE_EXCEEDED');
+      }
+
+      // 2. Verify the user has this stock
       const holding = await tx.holding.findUnique({
         where: { portfolioId_symbol: { portfolioId, symbol } }
       });

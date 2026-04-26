@@ -1,5 +1,5 @@
 import { transactionService } from '../services/transaction.service.js';
-import { buyStockSchema } from '../validators/transaction.schema.js';
+import { buyStockSchema,sellStockSchema } from '../validators/transaction.schema.js';
 
 const buyStock = async (req, res, next) => {
   try {
@@ -22,9 +22,15 @@ const buyStock = async (req, res, next) => {
       });
     }
     if (error.message === 'COMPANY_NOT_FOUND') {
-      return res.status(404).json({ 
-        success: false, 
-        error: "The stock symbol provided does not exist in our market" 
+      return res.status(404).json({
+        success: false,
+        error: "The stock symbol provided does not exist in our market"
+      });
+    }
+    if (error.message === 'PRICE_SLIPPAGE_EXCEEDED') {
+      return res.status(400).json({
+        success: false,
+        error: "Order rejected: submitted price deviates more than 0.5% from the current market price"
       });
     }
     next(error);
@@ -48,6 +54,18 @@ const sellStock = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: "You do not have enough quantity of this stock to sell."
+      });
+    }
+    if (error.message === 'COMPANY_NOT_FOUND') {
+      return res.status(404).json({
+        success: false,
+        error: "The stock symbol provided does not exist in our market"
+      });
+    }
+    if (error.message === 'PRICE_SLIPPAGE_EXCEEDED') {
+      return res.status(400).json({
+        success: false,
+        error: "Order rejected: submitted price deviates more than 0.5% from the current market price"
       });
     }
     next(error);

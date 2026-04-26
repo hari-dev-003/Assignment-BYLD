@@ -1,4 +1,4 @@
-import { portfolioService,getPortfolioSummary } from '../services/portfolio.service.js';
+import { portfolioService, getPortfolioSummary, getHoldings } from '../services/portfolio.service.js';
 import { createPortfolioSchema, addBalanceSchema } from '../validators/portfolio.schema.js';
 
 const createPortfolio = async (req, res, next) => {
@@ -59,4 +59,21 @@ const addFunds = async (req, res, next) => {
   }
 };
 
-export {createPortfolio,addFunds,getPortfolioDetails}
+const getPortfolioHoldings = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const holdings = await getHoldings(id);
+
+    return res.status(200).json({
+      success: true,
+      data: { portfolioId: id, holdings },
+    });
+  } catch (error) {
+    if (error.message === 'PORTFOLIO_NOT_FOUND') {
+      return res.status(404).json({ success: false, error: 'Portfolio not found' });
+    }
+    next(error);
+  }
+};
+
+export { createPortfolio, addFunds, getPortfolioDetails, getPortfolioHoldings };

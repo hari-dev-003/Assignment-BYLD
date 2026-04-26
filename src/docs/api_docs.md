@@ -232,7 +232,7 @@ Returned when no portfolio matches the provided ID.
 
 ---
 
-# POST /v1/portfolios/{id}/buy
+# POST /v1/portfolios/{id}/transactions/buy
 ## Buy Stock
 
 Purchases a specified stock and adds it to the given portfolio. The submitted price must be within ±0.5% of the current market price (slippage protection).
@@ -339,7 +339,7 @@ Returned when the stock symbol does not exist in the system.
 
 ---
 
-# POST /v1/portfolios/{id}/sell
+# POST /v1/portfolios/{id}/transactions/sell
 ## Sell Stock
 
 Initiates a sell order for a specific stock within a given portfolio. The submitted price must be within ±0.5% of the current market price (slippage protection). If all shares are sold, the holding is removed entirely.
@@ -441,6 +441,80 @@ Returned when the stock symbol does not exist in the system.
 {
   "success": false,
   "error": "The stock symbol provided does not exist in our market"
+}
+```
+
+---
+
+# GET /v1/portfolios/{id}/holdings
+## Get Portfolio Holdings
+
+Returns all current stock/asset positions for a specific portfolio with weighted-average cost basis and total invested per holding.
+
+---
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | `string` (UUID) | Yes | The unique identifier of the portfolio whose holdings are to be retrieved. |
+
+---
+
+### Response
+
+#### `200 OK`
+
+Returns the holdings list for the portfolio.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Indicates the request was successful. |
+| `data.portfolioId` | `string` (UUID) | The portfolio these holdings belong to. |
+| `data.holdings` | `array` | List of all current stock/asset positions, sorted by symbol. |
+| `data.holdings[].symbol` | `string` | Stock ticker symbol. |
+| `data.holdings[].quantity` | `string` | Number of shares held. |
+| `data.holdings[].averageCost` | `string` | Weighted average cost per share across all buy orders. |
+| `data.holdings[].totalInvested` | `string` | Total cost basis for this position (`quantity × averageCost`). |
+
+**Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "portfolioId": "74646615-3698-46a7-9625-c1293fdb91e7",
+    "holdings": [
+      {
+        "symbol": "RELIANCE",
+        "quantity": "11",
+        "averageCost": "2951.9091",
+        "totalInvested": "32471.00"
+      },
+      {
+        "symbol": "TCS",
+        "quantity": "5",
+        "averageCost": "3820.15",
+        "totalInvested": "19100.75"
+      }
+    ]
+  }
+}
+```
+
+#### `404 Not Found`
+
+Returned when no portfolio matches the provided ID.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Always `false` on error. |
+| `error` | `string` | A message indicating the portfolio was not found. |
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": "Portfolio not found"
 }
 ```
 

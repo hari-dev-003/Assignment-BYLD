@@ -3,6 +3,7 @@ import swaggerUi from 'swagger-ui-express';
 import {logger} from "./middleware/logger.js";
 import router from './routes/v1.routes.js';
 import { swaggerSpec } from './config/swagger.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express()
 app.use(express.json())
@@ -17,5 +18,7 @@ app.get("/v1/test", (req, res) => res.send("V1 is working!"));
 app.get("/",(req,res)=>{
     res.json("Welcome to backend")
 })
+
+app.use(errorHandler);
 
 export default app;

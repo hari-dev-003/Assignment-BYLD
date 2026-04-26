@@ -1,5 +1,6 @@
 import { Decimal } from 'decimal.js';
 import prisma from '../config/db.js';
+import { calcWeightedAvgCost, calcTotalCost, calcProceeds } from '../utils/finance.js';
 
 export const transactionService = {
   // --- BUY LOGIC ---
@@ -18,47 +19,40 @@ export const transactionService = {
         throw new Error('PRICE_SLIPPAGE_EXCEEDED');
       }
 
-      // 2. Checking Portfolio and Balance
+      // 2. Check Portfolio and Balance
       const portfolio = await tx.portfolio.findUnique({ where: { id: portfolioId } });
       if (!portfolio) throw new Error('PORTFOLIO_NOT_FOUND');
 
-      const totalCost = new Decimal(quantity).times(new Decimal(price));
+      const totalCost = calcTotalCost(quantity, price);
       const currentBalance = new Decimal(portfolio.cashBalance.toString());
 
       if (currentBalance.lt(totalCost)) {
         throw new Error('INSUFFICIENT_FUNDS');
       }
 
-      // 3. Update or Create Holding 
+      // 3. Update or Create Holding
       const existingHolding = await tx.holding.findUnique({
-        where: { portfolioId_symbol: { portfolioId, symbol } }
+        where: { portfolioId_symbol: { portfolioId, symbol } },
       });
 
       if (existingHolding) {
-        const oldQty = new Decimal(existingHolding.quantity.toString());
-        const oldAvg = new Decimal(existingHolding.avgCost.toString());
-        const newQty = oldQty.plus(new Decimal(quantity));
-        
-        
-        const newAvgCost = (oldQty.times(oldAvg).plus(totalCost)).div(newQty);
+        const newQty = new Decimal(existingHolding.quantity.toString()).plus(new Decimal(quantity.toString()));
+        const newAvgCost = calcWeightedAvgCost(existingHolding.quantity, existingHolding.avgCost, quantity, price);
 
         await tx.holding.update({
           where: { id: existingHolding.id },
-          data: { 
-            quantity: newQty.toNumber(), 
-            avgCost: newAvgCost 
-          }
+          data: { quantity: newQty.toNumber(), avgCost: newAvgCost },
         });
       } else {
         await tx.holding.create({
-          data: { portfolioId, symbol, quantity, avgCost: price }
+          data: { portfolioId, symbol, quantity, avgCost: price },
         });
       }
 
       // 4. Deduct Cash
       await tx.portfolio.update({
         where: { id: portfolioId },
-        data: { cashBalance: currentBalance.minus(totalCost) }
+        data: { cashBalance: currentBalance.minus(totalCost) },
       });
 
       return { symbol, quantity, totalCost: totalCost.toString() };
@@ -82,40 +76,38 @@ export const transactionService = {
 
       // 2. Verify the user has this stock
       const holding = await tx.holding.findUnique({
-        where: { portfolioId_symbol: { portfolioId, symbol } }
+        where: { portfolioId_symbol: { portfolioId, symbol } },
       });
 
       if (!holding || holding.quantity < quantity) {
         throw new Error('INSUFFICIENT_HOLDINGS');
       }
 
-      const sellProceeds = new Decimal(quantity).times(new Decimal(price));
-      const newQty = new Decimal(holding.quantity).minus(new Decimal(quantity));
+      const sellProceeds = calcProceeds(quantity, price);
+      const newQty = new Decimal(holding.quantity.toString()).minus(new Decimal(quantity.toString()));
 
-      // 2. Update Holding: If quantity becomes 0, remove the holding entirely
+      // 3. Update Holding: remove entirely if quantity reaches zero
       if (newQty.isZero()) {
-        await tx.holding.delete({
-          where: { id: holding.id }
-        });
+        await tx.holding.delete({ where: { id: holding.id } });
       } else {
         await tx.holding.update({
           where: { id: holding.id },
-          data: { quantity: newQty.toNumber() }
+          data: { quantity: newQty.toNumber() },
         });
       }
 
-      // 3. Add proceeds to Cash Balance
+      // 4. Add proceeds to Cash Balance
       const portfolio = await tx.portfolio.findUnique({ where: { id: portfolioId } });
       if (!portfolio) throw new Error('PORTFOLIO_NOT_FOUND');
-      
+
       const currentBalance = new Decimal(portfolio.cashBalance.toString());
-      
+
       await tx.portfolio.update({
         where: { id: portfolioId },
-        data: { cashBalance: currentBalance.plus(sellProceeds) }
+        data: { cashBalance: currentBalance.plus(sellProceeds) },
       });
 
       return { symbol, quantitySold: quantity, proceeds: sellProceeds.toString() };
     });
-  }
+  },
 };

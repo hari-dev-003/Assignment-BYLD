@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPortfolio, addFunds, getPortfolioDetails } from '../controllers/portfolio.controller.js';
+import { createPortfolio, addFunds, getPortfolioDetails, getPortfolioHoldings } from '../controllers/portfolio.controller.js';
 import { buyStock, sellStock } from '../controllers/transaction.controller.js';
 import { createAlert } from '../controllers/alert.controller.js';
 
@@ -156,7 +156,7 @@ router.get('/portfolios/:id', getPortfolioDetails);
 
 /**
  * @openapi
- * /v1/portfolios/{id}/buy:
+ * /v1/portfolios/{id}/transactions/buy:
  *   post:
  *     tags:
  *       - Transactions
@@ -239,11 +239,11 @@ router.get('/portfolios/:id', getPortfolioDetails);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/portfolios/:id/buy', buyStock);
+router.post('/portfolios/:id/transactions/buy', buyStock);
 
 /**
  * @openapi
- * /v1/portfolios/{id}/sell:
+ * /v1/portfolios/{id}/transactions/sell:
  *   post:
  *     tags:
  *       - Transactions
@@ -326,7 +326,55 @@ router.post('/portfolios/:id/buy', buyStock);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/portfolios/:id/sell', sellStock);
+router.post('/portfolios/:id/transactions/sell', sellStock);
+
+/**
+ * @openapi
+ * /v1/portfolios/{id}/holdings:
+ *   get:
+ *     tags:
+ *       - Portfolio
+ *     summary: Get holdings for a portfolio
+ *     description: >
+ *       Returns all current stock/asset positions for the portfolio with
+ *       weighted-average cost basis and total invested per holding.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Portfolio ID
+ *     responses:
+ *       200:
+ *         description: Holdings retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     portfolioId:
+ *                       type: string
+ *                       format: uuid
+ *                     holdings:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Holding'
+ *       404:
+ *         description: Portfolio not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get('/portfolios/:id/holdings', getPortfolioHoldings);
 
 /**
  * @openapi

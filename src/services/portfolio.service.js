@@ -46,4 +46,21 @@ const getPortfolioSummary = async (portfolioId) => {
   return portfolio;
 };
 
-export {getPortfolioSummary}
+const getHoldings = async (portfolioId) => {
+  const portfolio = await prisma.portfolio.findUnique({ where: { id: portfolioId } });
+  if (!portfolio) throw new Error('PORTFOLIO_NOT_FOUND');
+
+  const holdings = await prisma.holding.findMany({
+    where: { portfolioId },
+    orderBy: { symbol: 'asc' },
+  });
+
+  return holdings.map((h) => ({
+    symbol:        h.symbol,
+    quantity:      h.quantity,
+    averageCost:   h.avgCost,
+    totalInvested: (Number(h.quantity) * Number(h.avgCost)).toFixed(2),
+  }));
+};
+
+export { getPortfolioSummary, getHoldings };

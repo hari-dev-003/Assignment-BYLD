@@ -9,8 +9,6 @@
 
 ## Language Declaration
 
-> The assignment specifies Java 17+ / Spring Boot 3.x. The FAQ states: *"What if I only know Python / Node? You can use Python (FastAPI) or Node (NestJS/Express) — but tell us upfront in the README."*
->
 > This submission uses **Node.js 18 + Express 5** with **Prisma ORM** and **PostgreSQL 14**. All evaluation criteria — money math, migrations, error handling, tests, reproducibility — are met on the same rubric.
 
 | Spring Boot | This project |
@@ -38,12 +36,6 @@ Starts PostgreSQL 14, runs Prisma migrations, seeds 20 companies, and starts the
 
 ---
 
-## Auth
-
-No authentication required. All endpoints are open (per assignment spec: *"Leave it open or use a dev-only bearer token — document in README"*).
-
----
-
 ## Project Timeline
 
 | Date | Activity |
@@ -55,6 +47,7 @@ No authentication required. All endpoints are open (per assignment spec: *"Leave
 | Apr 25, +1.0 hr | Variant C — price alert system and 30s poller |
 | Apr 26, 4:00–5:00 pm | Unit + integration tests |
 | Apr 26, 7:00–8:30 pm | README and AI_LOG.md |
+| Apr 27, 6:30–7:00 pm | README and AI_LOG.md verification for correctness |
 
 **Total: ~12 hours across 3 days (within the 8–12 hour budget).**
 
@@ -73,6 +66,14 @@ No authentication required. All endpoints are open (per assignment spec: *"Leave
 | API Docs | swagger-jsdoc + swagger-ui-express |
 | Testing | Vitest + Supertest |
 | Container | Docker + docker-compose |
+
+---
+
+## System Architecture
+
+![System Architecture](docs/assets/system_architecture.svg)
+
+> Full database schema and key design decisions are documented in [`docs/DESIGN.md`](docs/DESIGN.md).
 
 ---
 
@@ -139,7 +140,7 @@ cp .env.example .env
 
 | File | Contents |
 |---|---|
-| [`docs/DESIGN.md`](docs/DESIGN.md) | Key design decisions, spec deviations, what I'd do with 2 more days |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Key design decisions, database schema, spec deviations, what I'd do with 2 more days |
 | [`docs/TESTING.md`](docs/TESTING.md) | Test suite overview and how to run |
 | [`docs/ALERTS.md`](docs/ALERTS.md) | Variant C — alert system and webhook.site testing guide |
 | [`docs/api_test_report.md`](docs/api_test_report.md) | Full API reference with request/response examples |

@@ -1,5 +1,13 @@
 # Design Decisions, Deviations & Roadmap
 
+## Database Schema
+
+![Database Schema](assets/database_schema.svg)
+
+> `Company` has no FK relationship to the other tables. `Holding`, `Transaction`, and `Alert` store the ticker `symbol` as a plain string; the service layer does an explicit `company.findUnique({ where: { symbol } })` lookup for validation and price data. The unique constraint `(portfolioId, symbol)` on `Holding` prevents duplicate positions.
+
+---
+
 ## Key Design Decisions
 
 ### Money Math

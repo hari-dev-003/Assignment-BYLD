@@ -2,7 +2,7 @@
 
 **Developer:** Hari Dev
 **Project:** BYLD Wealth — Backend Intern Assignment (Variant C)
-**Period:** April 24–26, 2026
+**Period:** April 24–27, 2026
 
 ---
 
@@ -87,6 +87,22 @@ Kept the finance utility extraction — this was the right call. It made the mat
 
 ---
 
+### Prompt 7 — System Architecture & Database Schema Diagrams
+**Prompt (paraphrased):**
+> "Generate a project architecture diagram for the README and include the database schema in the design document. Analyse the project deeply first — read the actual source files — then plan both diagrams before implementing."
+
+**What AI produced:**
+Before drawing anything, AI read every relevant file: `src/app.js`, `v1.routes.js`, all controllers, all services, `alertPoller.js`, both middleware files, `finance.js`, `prisma/schema.prisma`, and the raw migration SQL in `prisma/migrations/`. From that it produced:
+
+- A **system architecture diagram** showing the full request lifecycle: HTTP client → logger middleware (X-Request-Id) → v1 Router + Zod → three controller/service stacks (Portfolio, Transaction, Alert) → Prisma → PostgreSQL, with `finance.js` as a utility edge off Transaction, the Alert Poller as an independent `setInterval` branch firing webhooks externally, and the errorHandler path back to the client.
+- A **database ERD** mapping all five tables (`Portfolio`, `Holding`, `Transaction`, `Alert`, `Company`) with correct column types (`NUMERIC(19,4)` annotated on every monetary field), PK/FK/UK markers, enum value sets, and the three FK relationships (Portfolio → Holding, Transaction, Alert). It also correctly identified that `Company` carries no FK — referenced only by symbol string at the service layer — and flagged the unique constraint on `Holding(portfolioId, symbol)`.
+- Both diagrams were embedded as SVG files in `docs/assets/` and referenced in `README.md` and `docs/DESIGN.md` respectively.
+
+**Kept / Rejected:**
+Kept fully. The approach of reading every source file before designing the diagrams — rather than inferring from the README — meant both outputs were accurate against the real code: the correct middleware order, the actual 30-second polling interval, the exact column precision, and the Company symbol-string reference pattern confirmed directly from the migration SQL. I reviewed the architecture diagram against the actual request flow and the ERD against the Prisma schema and migration file, and both matched precisely. No corrections were needed.
+
+---
+
 ## A Bug AI Introduced
 
 **Bug:** In the initial implementation of `executeSell`, the holdings quantity check was written as:
@@ -115,13 +131,13 @@ if (!holding || holding.quantity < quantity) {
 
 ## Time Split
 
-Breakdown of time spent specifically on AI-related activities across the project.
+AI was involved across all stages of the project timeline — scope analysis, schema design, implementation, debugging, testing, and documentation. Total time spent on AI-related activities: **~3.5 hrs** out of ~12 hrs total.
 
-| AI Activity | Approx. % |
-|---|---|
-| Writing and refining prompts | 30% |
-| Reviewing AI output line-by-line (reading diffs, checking logic) | 40% |
-| Fixing / rejecting AI-introduced errors | 20% |
-| Documenting AI decisions in this log | 10% |
+| AI Activity | Approx. % | Approx. Time |
+|---|---|---|
+| Writing and refining prompts | 30% | ~1 hr |
+| Reviewing AI output line-by-line (reading diffs, checking logic) | 40% | ~1.5 hrs |
+| Fixing / rejecting AI-introduced errors | 20% | ~45 mins |
+| Documenting AI decisions in this log | 10% | ~15 mins |
 
 The largest share was **reviewing output**, not prompting — because money math and transaction logic require line-by-line verification. A bug here does not cause a crash; it silently produces a wrong balance.

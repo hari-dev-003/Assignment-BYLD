@@ -13,20 +13,6 @@
 
 ---
 
-## Project Timeline
-
-| Date & Time | Activity |
-|---|---|
-| Apr 24, 3:00–5:00 pm | Read assignment PDF, understood scope, designed system architecture, proposed and rejected AI's workflow, finalised own flow diagram |
-| Apr 24, 6:00–7:00 pm | Scaffolded project structure, tested sample route end-to-end, set up PostgreSQL + Docker |
-| Apr 25, 3:00–7:00 pm | Implemented core endpoints: `POST /portfolios`, `POST /balance`, `GET /portfolio`, buy/sell logic |
-| Apr 25, +1.5 hrs | Error correction session with AI — debugging ESM issues, Prisma transaction edge cases |
-| Apr 25, +1.0 hr | Studied Variant C requirements, implemented price alert system and 30s poller |
-| Apr 26, 4:00–5:00 pm | Discussed testing strategy with AI, implemented unit + integration tests |
-| Apr 26, 7:00–8:30 pm | Wrote README.md and AI_LOG.md |
-
----
-
 ## Significant Prompts
 
 ### Prompt 1 — Initial Scope Understanding
@@ -129,15 +115,13 @@ if (!holding || holding.quantity < quantity) {
 
 ## Time Split
 
-| Activity | Approx. % |
+Breakdown of time spent specifically on AI-related activities across the project.
+
+| AI Activity | Approx. % |
 |---|---|
-| Reviewing and validating AI output (reading diffs, checking logic) | 28% |
-| Prompting AI (writing prompts, refining, iterating) | 22% |
-| Writing code myself (scaffolding, config, fixing AI output) | 20% |
-| Debugging (ESM issues, Prisma errors, Docker config) | 15% |
-| Testing (running tests, validating responses in Swagger) | 9% |
-| Reading docs (Prisma, Decimal.js, Zod v4, Vitest ESM) | 6% |
+| Writing and refining prompts | 30% |
+| Reviewing AI output line-by-line (reading diffs, checking logic) | 40% |
+| Fixing / rejecting AI-introduced errors | 20% |
+| Documenting AI decisions in this log | 10% |
 
-**Total time: ~12 hours** across 3 days (within the 8–12 hour budget).
-
-The highest cost was reviewing AI output — not because the output was wrong often, but because money math and transaction logic require line-by-line verification. A bug here does not cause a crash; it silently produces a wrong balance.
+The largest share was **reviewing output**, not prompting — because money math and transaction logic require line-by-line verification. A bug here does not cause a crash; it silently produces a wrong balance.
